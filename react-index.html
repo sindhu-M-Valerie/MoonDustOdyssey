@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moon Jumper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a3a 0%, #0f0f1f 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff8aa;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script>
+        const { useState, useEffect, useRef } = React;
+        
+        function MoonJumperGame() {
+            const canvasRef = useRef(null);
+            const [score, setScore] = useState(0);
+            const gameRef = useRef({
+                cat: { x: 0, y: 0, vy: 0, r: 30 },
+                platforms: [],
+                stars: [],
+                moonRotation: 0,
+                gravity: 0.6,
+                jumpForce: -10
+            });
+            
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                // Initialize game objects
+                const game = gameRef.current;
+                
+                // Create platforms
+                game.platforms = [];
+                for (let i = 0; i < 8; i++) {
+                    game.platforms.push({
+                        angle: i * (Math.PI / 4),
+                        distance: 200
+                    });
+                }
+                
+                // Create stars
+                game.stars = [];
+                for (let i = 0; i < 50; i++) {
+                    game.stars.push({
+                        x: (Math.random() - 0.5) * canvas.width,
+                        y: (Math.random() - 0.5) * canvas.height,
+                        size: Math.random() * 3 + 1,
+                        twinkle: Math.random() * Math.PI * 2,
+                        speed: Math.random() * 0.02 + 0.01
+                    });
+                }
+                
+                // Game loop
+                function gameLoop() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw gradient background
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, 'rgb(25, 25, 60)');
+                    gradient.addColorStop(1, 'rgb(10, 10, 25)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Center coordinate system
+                    ctx.save();
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    
+                    // Draw twinkling stars
+                    game.stars.forEach(star => {
+                        star.twinkle += star.speed;
+                        const alpha = (Math.sin(star.twinkle) + 1) / 2 * 0.8 + 0.2;
+                        
+                        ctx.fillStyle = `rgba(255, 255, 200, ${alpha})`;
+                        ctx.font = `${star.size * 6}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.fillText('⭐', star.x, star.y);
+                    });
+                    
+                    // Draw moon
+                    ctx.font = '60px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🌙', 0, 0);
+                    
+                    // Draw rotating platforms
+                    ctx.save();
+                    ctx.rotate(game.moonRotation);
+                    
+                    game.platforms.forEach(platform => {
+                        const x = platform.distance * Math.cos(platform.angle);
+                        const y = platform.distance * Math.sin(platform.angle);
+                        
+                        ctx.fillStyle = 'rgba(200, 200, 255, 0.8)';
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                        ctx.lineWidth = 2;
+                        
+                        ctx.beginPath();
+                        ctx.ellipse(x, y, 20, 5, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    });
+                    
+                    ctx.restore();
+                    
+                    // Update and draw cat
+                    const cat = game.cat;
+                    cat.vy += game.gravity;
+                    cat.y += cat.vy;
+                    
+                    // Check if cat fell
+                    if (cat.y > canvas.height / 2) {
+                        cat.y = 0;
+                        cat.vy = 0;
+                        setScore(0);
+                    }
+                    
+                    // Draw cat
+                    ctx.fillStyle = '#38BDF8';
+                    ctx.beginPath();
+                    ctx.arc(cat.x, cat.y, cat.r / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Cat eyes
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(cat.x - 5, cat.y - 5, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(cat.x + 5, cat.y - 5, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Update rotation
+                    game.moonRotation += 0.002 + score * 0.0001;
+                    
+                    ctx.restore();
+                    
+                    requestAnimationFrame(gameLoop);
+                }
+                
+                // Check if cat is on platform
+                function isOnPlatform() {
+                    const cat = game.cat;
+                    
+                    for (let platform of game.platforms) {
+                        const px = platform.distance * Math.cos(platform.angle + game.moonRotation);
+                        const py = platform.distance * Math.sin(platform.angle + game.moonRotation);
+                        const dist = Math.sqrt((cat.x - px) ** 2 + ((cat.y + cat.r / 2) - py) ** 2);
+                        
+                        if (dist < cat.r && cat.vy >= 0) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                
+                // Jump function
+                function jump() {
+                    if (isOnPlatform()) {
+                        game.cat.vy = game.jumpForce;
+                        setScore(prev => prev + 1);
+                    }
+                }
+                
+                // Event listeners
+                function handleKeyDown(e) {
+                    if (e.code === 'Space' || e.code === 'ArrowUp') {
+                        e.preventDefault();
+                        jump();
+                    }
+                }
+                
+                function handleClick() {
+                    jump();
+                }
+                
+                window.addEventListener('keydown', handleKeyDown);
+                canvas.addEventListener('click', handleClick);
+                
+                // Start game
+                gameLoop();
+                
+                // Cleanup
+                return () => {
+                    window.removeEventListener('keydown', handleKeyDown);
+                    canvas.removeEventListener('click', handleClick);
+                };
+            }, [score]);
+            
+            return React.createElement('div', { className: 'game-container' },
+                React.createElement('canvas', { ref: canvasRef }),
+                React.createElement('div', { className: 'score' }, `Score: ${score}`),
+                React.createElement('div', { className: 'instructions' }, 
+                    'Press SPACEBAR, ↑ or CLICK to jump!'
+                )
+            );
+        }
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(MoonJumperGame));
+    </script>
+</body>
+</html>
+</body>
+</html>
