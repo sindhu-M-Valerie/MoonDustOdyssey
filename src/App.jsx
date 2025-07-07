@@ -415,13 +415,13 @@ export default function App() {
       }
       // MoonDustBeam counter
       ctx.save();
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = '#ffffff';
+      ctx.fillStyle = '#ffff99'; // Light yellow
+      ctx.shadowColor = '#ffff99';
       ctx.shadowBlur = 8;
-      ctx.font = 'bold 16px Arial';
+      ctx.font = 'bold 17px Arial'; // Increased font size by 1
       ctx.textAlign = 'right';
       ctx.textBaseline = 'top';
-      ctx.fillText(`🌙✨🧚MoonDustBeam🌙✨🧚: ${moonDustBeam}`, canvas.width / 2 - 20, -canvas.height / 2 + 20);
+      ctx.fillText(`🌙✨🧚MoonDustBeam🌙✨🧚: ${moonDustBeam}`, canvas.width / 2 - 10, -canvas.height / 2 + 30); // Moved down by one line
       ctx.restore();
       ctx.restore();
 
@@ -442,7 +442,7 @@ export default function App() {
           transform: 'translateX(-50%)',
           zIndex: 99999,
           fontFamily: 'Arial, sans-serif',
-          fontSize: '2.5em',
+          fontSize: '2.4em',
           fontWeight: 'bold',
           textAlign: 'center',
           color: '#fff',
@@ -456,7 +456,7 @@ export default function App() {
           border: '2px solid rgba(255, 105, 180, 0.5)',
         }}
       >
-        🧚 Moon Dust Odyssey🧚
+        🌙✨🧚Moon Dust Odyssey 🧚✨🌙
       </div>
       
       <canvas

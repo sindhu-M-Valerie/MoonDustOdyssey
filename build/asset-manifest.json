@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/MoonDustOdyssey/static/js/main.785f1025.js",
+    "main.js": "/MoonDustOdyssey/static/js/main.007cb206.js",
     "index.html": "/MoonDustOdyssey/index.html",
-    "main.785f1025.js.map": "/MoonDustOdyssey/static/js/main.785f1025.js.map"
+    "main.007cb206.js.map": "/MoonDustOdyssey/static/js/main.007cb206.js.map"
   },
   "entrypoints": [
-    "static/js/main.785f1025.js"
+    "static/js/main.007cb206.js"
   ]
 }
